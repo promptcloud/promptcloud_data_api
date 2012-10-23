@@ -1,9 +1,10 @@
 # PromptCloudDataAPI
 
-This is PromptCloud's (promptcloud.com) API gem. It can be used to query indexed data from promptcloud.
-NOTE: API query requires a valid userid and password.
+This is PromptCloud's (http://promptcloud.com) data  API gem. It can be used to fetch the client specific data from PromptCloud data api.
 
-For any queries related to this gem, contact data-api-gem@promptcloud.com.
+NOTE: API query  requires a valid userid and password.
+
+For queries related to this gem please contact the folks at promptcloud or open a github issue
 
 ## Installation
 Option 1-
@@ -27,20 +28,22 @@ Access using program:
 require 'promptcloud_data_api'
 obj=PromptCloudApi.new
 obj.download_files({:user => "<your valid user name>", :pass => "<your valid password>", :timestamp=> <timestamp>[optional], :category=> "<category>"[optional]})
-#above method will put the downloaded files in ~/promptcloud/downloads
-#to override promptcloudhome (~/promptcloud), provide arg- :promptcloudhome=>"complete path of other dir"
-#to override download dir provide arg- :download_dir => "<download dir full path>"
-#to override conf dir provide arg- :apiconf => "<api conf full path>"
+
+* Above method will put the downloaded files in ~/promptcloud/downloads
+* To override promptcloudhome (~/promptcloud), provide arg- :promptcloudhome=>"complete path of other dir"
+* To override download dir provide arg- :download_dir => "<download dir full path>"
+* To override conf dir provide arg- :apiconf => "<api conf full path>"
 
 Access using Command line:
 
 get_promptcloud_data -h #will display help
 get_promptcloud_data --user <username> --pass <password> [--category <category>] [--timestamp <timestamp>] 
-#above command will put the downloaded files in ~/promptcloud/downloads
-#log file can be viewed at ~/promptcloud/log/*log
-#api config file at ~/promptcloud/configs/config.yml
-#to override the downloaded file use option --download_dir "<apidir full path>"
-#to override config dir use option --apiconf "<apiconf full path>"
+
+* Above command will put the downloaded files in ~/promptcloud/downloads
+* Log file can be viewed at ~/promptcloud/log/*log
+* Api config file at ~/promptcloud/configs/config.yml
+* To override the downloaded file use option --download_dir "<apidir full path>"
+* To override config dir use option --apiconf "<apiconf full path>"
 
 In command line tool, if option --perform_initial_setup is provided along with other options, then initial setup will be performed (create conf file, download dir)
 
