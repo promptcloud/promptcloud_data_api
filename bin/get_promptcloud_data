@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require File.dirname(File.expand_path(__FILE__)) + '/../lib/promptcloud_data_api.rb'
+
+options=PromptCloudApiArgParser.parse(ARGV)
+obj=PromptCloudApi.new(options)
+timer=PromptCloudTimer.new
+if options[:display_info] 
+	obj.display_info(options)
+elsif options[:perform_initial_setup] 
+	obj.perform_initial_setup(options)
+else
+	if options[:loop]
+		loop do 
+			new_feed_exists=obj.download_files(options)
+			if new_feed_exists == false
+				timer.wait
+			end
+		end
+	else
+		obj.download_files(options)
+	end
+end
