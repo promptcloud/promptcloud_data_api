@@ -168,9 +168,9 @@ class PromptCloudApi
 
 	private
 	def get_api_url(options)
-		promptcloud_api_query="http://api.promptcloud.com/data/info?id=#{@client_id}"
+		promptcloud_api_query="https://api.promptcloud.com/data/info?id=#{@client_id}"
 		if options[:bcp]
-			promptcloud_api_query="http://bcp.promptcloud.com/data/info?id=#{@client_id}"
+			promptcloud_api_query="https://api.bcp.promptcloud.com/data/info?id=#{@client_id}"
 		end
 
 		if options[:timestamp]
@@ -210,7 +210,13 @@ class PromptCloudApi
 		begin
 			promptcloud_api_query=get_api_url(options)
 			api_query_output=""
-			RestClient.get(promptcloud_api_query) do |response|
+			RestClient.get(promptcloud_api_query) do |response, request, result, &block|
+				if [301, 302, 307].include? response.code
+					response.follow_redirection(request, result, &block)
+				else
+					response.return!(request, result, &block)
+				end
+  				puts "res code: #{response.code}"
 				if response.code!=200
 					if options[:bcp]
 						$stderr.puts "bcp too is down :(, please mail downtime@promptcloud.com "
