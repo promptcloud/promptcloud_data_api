@@ -31,23 +31,25 @@ Directly install using:
 
 require 'promptcloud_data_api'
 
-obj = PromptCloudApi.new({:user => <your valid user name>, :pass => <your valid password>}) # API v1
+obj = PromptCloudApi.new({:user => "your valid user name", :pass => "your valid password"}) # API v1
 
-obj = PromptCloudApi.new({:user => <your valid user name>, :client_auth_key => <your valid auth key>}) # API v2
+obj = PromptCloudApi.new({:user => "your valid user name", :client_auth_key => "your valid auth key"}) # API v2
 
-obj.download_files({:timestamp => <timestamp>[optional], :category => <category>[optional], :site => <site name>[optional]})
+obj.download_files({:timestamp => "timestamp"[optional], :category => "category"[optional], :site => "site name"[optional]})
 
 #### Access using command line
 
 get_promptcloud_data -h #will display help
-get_promptcloud_data --user <username> --pass <password> [--category <category>] [--timestamp <timestamp>] # API v1 
-get_promptcloud_data --api_version v2  --user <username> --client_auth_kay <auth key> [--category <category>] [--timestamp <timestamp>] # API v2
+
+get_promptcloud_data --user "username" --pass "password" [--category "category"] [--timestamp "timestamp"] # API v1 
+
+get_promptcloud_data --api_version v2  --user "username" --client_auth_kay "auth key" [--category "category"] [--timestamp "timestamp"] # API v2
 
 * The downloaded files will be put in ~/promptcloud/downloads
-* To override download di, provide arg - :download_dir => <download dir full path>
-* To override defalut promptcloudhome(~/promptcloud), provide arg - :promptcloudhome => <complete path of other dir>
+* To override download di, provide arg - :download_dir => "download dir full path"
+* To override defalut promptcloudhome(~/promptcloud), provide arg - :promptcloudhome => "complete path of other dir"
 * API config file at ~/promptcloud/configs/config.yml
-* To override conf dir provide arg - :apiconf => <api conf full path>
+* To override conf dir provide arg - :apiconf => "api conf full path"
 * Log file can be viewed at ~/promptcloud/log/*log
 
 In command line tool, if option --perform_initial_setup is provided along with other options, then initial setup will be performed (create conf file, download dir).
