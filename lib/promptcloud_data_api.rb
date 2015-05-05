@@ -14,240 +14,230 @@ require 'digest/md5'
 class PromptCloudApi
 	@@promptcloudhome="#{ENV["HOME"]}/promptcloud/"
 	attr_accessor :api_downtime
-	def initialize(args_hash={})
+	
+	def initialize(args_hash = {})
 		super()
-		
-		@download_dir=nil
-		@client_id=nil
+		@download_dir = nil
+		@client_id = nil
+		@password = nil
+		@client_auth_key = nil
 		perform_initial_setup(args_hash)
 	end
 
-	def display_info(options)
-		apiconf="#{@@promptcloudhome}/configs/config.yml"
-		if options[:apiconf]
-			apiconf = options[:apiconf]
-		end
-
+	def display_info(args_hash)
+		apiconf = "#{@@promptcloudhome}/configs/config.yml"
+		apiconf = args_hash[:apiconf] if args_hash[:apiconf]
 		if File.file?(apiconf)
-			conf_hash=YAML::load_file(apiconf)
+			conf_hash = YAML::load_file(apiconf)
 			conf_hash.each_pair do |key, val|
 				puts "#{key} : #{val}"
 			end
 		else
-			$stderr.puts "Config file #{apiconf} doesn't exist"
+			$stderr.puts "Config file #{apiconf} doesn't exist, use -i to create config file"
 		end
 	end
-	#optional argument options={:promptcloudhome=>..., :apiconf=>...., :queried_timestamp_file=>}
-	def perform_initial_setup(options={})
-		if options[:promptcloudhome]
-			@@promptcloudhome=options[:promptcloudhome]
-		end
+	
+	#optional argument args_hash={:promptcloudhome=>..., :apiconf=>...., :queried_timestamp_file=>}
+	def perform_initial_setup(args_hash={})
+		@@promptcloudhome = args_hash[:promptcloudhome] if args_hash[:promptcloudhome]
+		FileUtils.mkdir_p(@@promptcloudhome) unless File.directory?(@@promptcloudhome)
+		
+		args_hash[:apiconf] = "#{@@promptcloudhome}/configs/config.yml" unless args_hash[:apiconf]
+		FileUtils.mkdir_p(File.dirname(args_hash[:apiconf])) unless File.directory?(File.dirname(args_hash[:apiconf]))
+		
+		args_hash[:log_dir]="#{@@promptcloudhome}/log" unless args_hash[:log_dir]
+		FileUtils.mkdir_p(args_hash[:log_dir]) unless File.directory?(args_hash[:log_dir])
+		
+		args_hash[:md5_dir]="#{@@promptcloudhome}/md5sums" unless args_hash[:md5_dir]
+		FileUtils.mkdir_p(args_hash[:md5_dir]) unless File.directory?(args_hash[:md5_dir])
+		
+		args_hash[:queried_timestamp_file]="#{@@promptcloudhome}/last_queried_ts" unless args_hash[:queried_timestamp_file]
+		
+		args_hash["download_dir"] = File.join(@@promptcloudhome, "downloads") unless args_hash["download_dir"]
+		@download_dir = args_hash["download_dir"]
+		FileUtils.mkdir_p(@download_dir) unless File.directory?(@download_dir)
 
-		if not File.directory?(@@promptcloudhome)
-			FileUtils.mkdir_p(@@promptcloudhome)
-		end
-
-		unless options[:apiconf]
-			options[:apiconf]="#{@@promptcloudhome}/configs/config.yml"
-		end
-		if not File.directory?(File.dirname(options[:apiconf]))
-			FileUtils.mkdir_p(File.dirname(options[:apiconf]))
-		end
-
-		if not  File.file?(options[:apiconf])
-			$stderr.puts "#{$@} : Could not find config file : #{options[:apiconf]}"
-			$stderr.puts "Please input your id( for example if you use url http://api.promptcloud.com/data/info?id=demo then your user id is demo
-			)"
-			client_id=STDIN.gets.chomp.strip
-			yml_val={"client_id" => client_id, "download_dir" => File.join(@@promptcloudhome, "downloads")}
-			File.open(options[:apiconf], "w") do |file|
-				file << yml_val.to_yaml
+		@conf_hash = {}
+		if File.file?(args_hash[:apiconf])
+			conf_hash = YAML::load_file(args_hash[:apiconf])
+			@conf_hash = conf_hash if conf_hash and conf_hash.is_a?Hash
+			@client_id = @conf_hash["client_id"]
+			if args_hash[:api_version] == "v2"
+				@client_auth_key = @conf_hash["client_auth_key"]
+			else
+				@password = @conf_hash["password"]
 			end
 		end
-
-		unless options[:log_dir]
-			options[:log_dir]="#{@@promptcloudhome}/log"
+		@client_id = args_hash[:user] if args_hash[:user]
+		@client_auth_key = args_hash[:client_auth_key] if args_hash[:client_auth_key]
+		@password = args_hash[:pass] if args_hash[:pass]
+		unless @client_id	
+			$stdout.print "\nPlease enter the user id(for example if you use url http://api.promptcloud.com/data/info?id=demo, then your user id is demo)\n:"
+			@client_id = STDIN.gets.chomp.strip
 		end
-		if not File.directory?(options[:log_dir])
-			FileUtils.mkdir_p(options[:log_dir])
-		end
-
-		unless options[:md5_dir]
-			options[:md5_dir]="#{@@promptcloudhome}/md5sums"
-		end
-		if not File.directory?(options[:md5_dir])
-			FileUtils.mkdir_p(options[:md5_dir])
-		end
-
-		unless options[:queried_timestamp_file]
-			options[:queried_timestamp_file]="#{@@promptcloudhome}/last_queried_ts"
-		end
-
-		@conf_hash=YAML::load_file(options[:apiconf])
-		@client_id=@conf_hash["client_id"]
-
-		unless @client_id
-			$stderr.puts "#{$@} : Could not find client id from config file : #{options[:apiconf]}"
-			exit 1
-		end
-
-		@download_dir=@conf_hash["download_dir"]
-		unless @download_dir
-			@download_dir=File.join(@@promptcloudhome, "downloads")
-		end
-
-		if not File.directory?(@download_dir)
-			FileUtils.mkdir_p(@download_dir)
+		if args_hash[:api_version] == "v2"
+			unless @client_auth_key
+				$stdout.print "\nPlease enter the auth key(Provided by PromptCloud)\n:"
+				@client_auth_key = STDIN.gets.chomp.strip
+			end
+		else
+			unless @password
+				$stdout.print "\nPlease enter the password(Provided by PromptCloud)\n:"
+				@password = STDIN.gets.chomp.strip
+			end
+		end	
+		@conf_hash["client_id"] = @client_id
+		@conf_hash["client_auth_key"] = @client_auth_key if args_hash[:api_version] == "v2"
+		@conf_hash["password"] = @password if args_hash[:api_version] == "v1"
+		@conf_hash["download_dir"] = @download_dir
+		File.open(args_hash[:apiconf], "w") do |file|
+			file << @conf_hash.to_yaml
 		end
 	end
 
-	def download_files(options)
-		if not options[:user] or not options[:pass]
-			raise Exception.new("You didn't provide username and password, please provide these as hash:{:user=><userid>, :pass=><password>}")
+	def download_files(args_hash)
+		new_feed_exists = false
+		ts = ("%10.9f" % (Time.now).to_f).to_s.gsub(/\./, "").to_i
+		fetch_log = "#{args_hash[:log_dir]}/fetched_urls-#{ts}.log"
+		fetch_log_file = File.open(fetch_log, "w")
+		ts_urls_map, url_md5_map = get_file_urls(args_hash)
+		unless ts_urls_map
+			$stderr.puts "Could not obtain file urls to download."
+			return new_feed_exists
 		end
-		new_feed_exists=false
-		ts=("%10.9f" % (Time.now).to_f).to_s.gsub(/\./, "").to_i
-		fetch_log="#{options[:log_dir]}/fetched_urls-#{ts}.log"
-		fetch_log_file=File.open(fetch_log, "w")
-		urls_ts_map, url_md5_map=get_file_urls(options)
-		if not urls_ts_map
-			$stderr.puts "#{$@} : Could not obtain file urls to download."
-			new_feed_exists
-		end
-		if urls_ts_map.keys.empty?
+		if ts_urls_map.keys.empty?
 			$stderr.puts "No new files to download"
 			return new_feed_exists
 		end
-
-		sorted_ts=urls_ts_map.keys.sort
+		sorted_ts = ts_urls_map.keys.sort
 		sorted_ts.each do |ts|
-			urls=urls_ts_map[ts]
+			urls = ts_urls_map[ts]
+			next if not urls
 			urls.each do |url|
-				md5sum=url_md5_map[url]
-				filename=File.basename(url)
-				md5_filename=filename.gsub(/\.gz/, ".md5sum")
-				md5_filepath=options[:md5_dir]+ "/#{md5_filename}"
-				if File.file?(md5_filepath) and File.open(md5_filepath).read.chomp.strip==md5sum
-					$stderr.puts "Skipping file at url : #{url}, it has been downloaded earlier"
+				md5sum = url_md5_map[url]
+				filename = File.basename(url)
+				md5_filename = filename.gsub(/\.gz/, ".md5sum")
+				md5_filepath = args_hash[:md5_dir]+ "/#{md5_filename}"
+				if File.file?(md5_filepath) and File.open(md5_filepath).read.chomp.strip == md5sum
+					$stderr.puts "Skipping file #{url}, it has been downloaded earlier."
 					next
 				end
-				new_feed_exists=true
-
+				new_feed_exists = true
 				begin
-					$stderr.puts "Fetching : #{url}"
-					req=RestClient::Request.new({:method=>"get",:user=>options[:user], :password =>options[:pass], :url =>url})
-					outfile=File.join(@download_dir, File.basename(url))
+					$stderr.puts "Fetching file #{url}"
+					req = RestClient::Request.new({:method => "get", :user => @client_id, :password => @password, :url =>url}) if args_hash[:api_version] == "v1"
+					req = RestClient::Request.new({:method=>"get", :url =>url}) if args_hash[:api_version] == "v2"
+					outfile = File.join(@download_dir, File.basename(url))
 					File.open(outfile, "wb") do |file|
 						file.write req.execute
-						fetch_log_file << "Fetched: #{url}"
 					end
-					content=""
+					content = ""
 					Zlib::GzipReader.open(outfile) {|gz|
 						content = gz.read
 					}
 					downloaded_md5 = Digest::MD5.hexdigest(content)
-					if md5sum==downloaded_md5
+					if md5sum == downloaded_md5
 						File.open(md5_filepath, "w"){|file| file.puts md5sum}
+						fetch_log_file << "Fetched: #{url}"
 					else
 						$stderr.puts "Url : #{url} was not downloaded completely, hence deleting the downloaded file"
+						fetch_log_file.puts "Failed: #{url}"
 						File.delete(outfile)
 					end
 				rescue Exception => e
-					$stderr.puts "#{$@} : Failed to fetch url : #{url}"
-					fetch_log_file.puts "#{$@} #{e.class}, #{e.message}"
+					$stderr.puts "Failed to fetch url: #{url}, Exception: #{e.class}, #{e.message}"
 					fetch_log_file.puts "Failed: #{url}"
 				end
 			end
 		end
-		
 		fetch_log_file.close
-		$stderr.puts "Log file : #{fetch_log}"
-		$stderr.puts "Downloaded files are available at:#{@download_dir}"
+		$stderr.puts "\nLog file : #{fetch_log}"
+		$stderr.puts "Downloaded files are available at : #{@download_dir}\n\n"
 		return new_feed_exists
 	end
 
 	private
-	def get_api_url(options)
-		promptcloud_api_query="https://api.promptcloud.com/data/info?id=#{@client_id}"
-		if options[:bcp]
-			promptcloud_api_query="https://api.bcp.promptcloud.com/data/info?id=#{@client_id}"
-		end
-
-		if options[:timestamp]
-			promptcloud_api_query+="&ts=#{options[:timestamp]}"
-			File.open(options[:queried_timestamp_file], "a") do |file|
-				file << options[:timestamp]
+	def get_api_url(args_hash)
+		base_url = "https://api.promptcloud.com"
+		base_url = "https://api.bcp.promptcloud.com" if args_hash[:bcp]
+		promptcloud_api_url = base_url + "/data/info?id=#{@client_id}" if args_hash[:api_version] == "v1"
+		promptcloud_api_url = base_url + "/v2/data/info?id=#{@client_id}&client_auth_key=#{@client_auth_key}" if args_hash[:api_version] == "v2"
+		if args_hash[:timestamp]
+			promptcloud_api_url += "&ts=#{args_hash[:timestamp]}"
+			File.open(args_hash[:queried_timestamp_file], "w") do |file|
+				file << args_hash[:timestamp]
 			end
 		end
-
-		if options[:category]
-			promptcloud_api_query+="&cat=#{options[:category]}"
-		end
-		return promptcloud_api_query
+		promptcloud_api_url += "&cat=#{args_hash[:category]}" if args_hash[:category]
+		promptcloud_api_url += "&site=#{args_hash[:site]}" if args_hash[:site]
+		return promptcloud_api_url
 	end
 
-	def handle_api_downtime(options)
+	def handle_api_downtime(args_hash)
 		if @api_downtime
-			total_downtime=Time.now - @api_downtime
+			total_downtime = Time.now - @api_downtime
 			if total_downtime > 1800
-				options[:bcp]=true
+				args_hash[:bcp] = true
 			end
 		else
-			@api_downtime=Time.now
+			@api_downtime = Time.now
 		end
 	end
 
-	def disable_bcp(options)
-		if options[:bcp]
-			options[:bcp]=nil
-			@api_downtime=nil
+	def disable_bcp(args_hash)
+		if args_hash[:bcp]
+			args_hash[:bcp] = nil
+			@api_downtime = nil
 		end
 	end
 
-	def get_file_urls(options)
-		url_ts_map={}
-		url_md5_map={}
+	def get_file_urls(args_hash)
+		ts_urls_map = {}
+		url_md5_map = {}
 		begin
-			promptcloud_api_query=get_api_url(options)
-			api_query_output=""
-			RestClient.get(promptcloud_api_query) do |response, request, result, &block|
+			promptcloud_api_url = get_api_url(args_hash)
+			$stdout.puts "Getting files to download from #{promptcloud_api_url}"
+			api_query_output = ""
+			RestClient.get(promptcloud_api_url) do |response, request, result, &block|
 				if [301, 302, 307].include? response.code
 					response.follow_redirection(request, result, &block)
 				else
 					response.return!(request, result, &block)
 				end
-  				puts "res code: #{response.code}"
-				if response.code!=200
-					if options[:bcp]
-						$stderr.puts "bcp too is down :(, please mail downtime@promptcloud.com "
-						disable_bcp(options)
+				if response.code != 200
+					if args_hash[:bcp]
+						$stderr.puts "Sorry, our bcp server is also down, please mail to downtime@promptcloud.com"
+						disable_bcp(args_hash)
 					else
-						if options[:loop]
-							$stderr.puts "Could not fetch from promptcloud api server, will try after the api server after the sleep and  promptcloud bcp after 30 mins"
+						if args_hash[:loop]
+							$stderr.puts "Could not fetch from PromptCloud data api server, will try the api server after the sleep and bcp server after 30 mins"
 						else
 							$stderr.puts "Main api server seems to be unreachable, you can try --bcp option"
 						end
-						handle_api_downtime(options)
+						handle_api_downtime(args_hash)
 					end
 				else
-					api_query_output=response
-					disable_bcp(options) #next fetch will be from promtcloud api
+					api_query_output = response
+					disable_bcp(args_hash) #next fetch will be from promtcloud api
 				end
 			end
-			api_query_output=open(promptcloud_api_query)
-			doc=REXML::Document.new(api_query_output)
+			doc = REXML::Document.new(api_query_output) if api_query_output
+			unless doc
+				$stderr.puts "Could not create xml doc"
+				return nil,nil
+			end
 			REXML::XPath.each(doc, '//entry').each do |entry_node|
-				updated_node=REXML::XPath.first(entry_node, './updated')
-				updated=updated_node.text.chomp.strip.to_i
-				url_node=REXML::XPath.first(entry_node, './url')
-				url=url_node.text.chomp.strip
-				md5_node=REXML::XPath.first(entry_node, './md5sum')
-				md5sum=md5_node.text.chomp.strip
-				url_md5_map[url]=md5sum
-				if url_ts_map[updated]
-					url_ts_map[updated].push(url)
+				updated_node = REXML::XPath.first(entry_node, './updated')
+				updated = updated_node.text.chomp.strip.to_i
+				url_node = REXML::XPath.first(entry_node, './url')
+				url = url_node.text.chomp.strip
+				md5_node = REXML::XPath.first(entry_node, './md5sum')
+				md5sum = md5_node.text.chomp.strip
+				url_md5_map[url] = md5sum
+				if ts_urls_map[updated]
+					ts_urls_map[updated].push(url)
 				else
-					url_ts_map[updated]=[url]
+					ts_urls_map[updated]=[url]
 				end
 			end
 			#REXML::XPath.each(doc, '//url').each{|node| urls.push(node.text)}
@@ -255,7 +245,7 @@ class PromptCloudApi
 			$stderr.puts "#{$@} : Api query failed:#{e.class}, #{e.message}"
 			return nil, nil
 		end
-		return url_ts_map, url_md5_map
+		return ts_urls_map, url_md5_map
 	end
 end
 
@@ -287,13 +277,16 @@ class PromptCloudTimer
 end
 
 class PromptCloudApiArgParser
+	
 	def initialize()
 		super
 	end
 
 	def self.validate(options,mandatory)
-		if not options[:perform_initial_setup] and not options[:display_info] and (not options[:user] or not options[:pass])
-			$stderr.puts "#{$@} : Please provide options perform_initial_setup/display_info or provide user and password for any other query"
+		options[:api_version] = "v1" if not options[:api_version] # default version
+		options[:api_version] = options[:api_version].downcase
+		if not ["v1","v2"].include? options[:api_version]
+			$stderr.puts "#{options[:api_version]} is not a valid api version. Please pass v1 or v2.(v1 is the default)"
 			return false
 		end
 		return true
@@ -312,56 +305,68 @@ END
 		options= options.merge(defaults)
 		opts=OptionParser.new do |opts|
 			opts.banner = "Usage: #{$0} [options] "
-
-
-			opts.on("--apiconf APICONFPATH",String, "override the config file location, the file which stores information like client_id, downloadir, previous timestamp file") do |v|
-				options[:apiconf] = v
+			
+			opts.on("-v","--api_version VERSION",String, "to get data from different api version(available versions are v1 and v2, the defalut version is v1)") do |v|
+				options[:api_version] = v
 			end
 
-			opts.on("--download_dir DOWNLOADDIR",String, "to override the download dir obtained from apiconf file") do |v|
-				options[:download_dir] = v
-			end
-
-			opts.on("--promptcloudhome PROMPTCLOUDHOME",String, "to override the promptcloudhome dir:~/promptcloud") do |v|
-				options[:promptcloudhome] = v
-			end
-
-			opts.on("--perform_initial_setup", "Perform initial setup") do |v|
-				options[:perform_initial_setup] = v
-			end
-			opts.on("--display_info", "Display veraiou info ") do |v|
-				options[:display_info] = v
-			end
-
-			opts.on("--timestamp TIMESTAMP",Integer, "query promptcloudapi for files newer than or equal to given timestamp") do |v|
-				options[:timestamp] = v
-			end
-
-			opts.on("--queried_timestamp_file queriedTIMESTAMPFILE",String, "override default queried_timestamp_file: file that stores last queried timestamp") do |v|
-				options[:queried_timestamp_file] = v
-			end
-
-			opts.on("--category CATEGORY ",String, "query promptcloudapi for files of given category. eg: if files of different verticals are placed in different directory under client's parent directory, then files of specific directory can be obtained by specifying that directory name in category option") do |v|
-				options[:category] = v
-			end
-
-			opts.on("--user USER",String, "Data api user id") do |v|
+			opts.on("-u","--user USER",String, "data api user id(provided by PromptCloud)") do |v|
 				options[:user] = v
 			end
 
-			opts.on("--pass PASSWORD",String, "Data api password") do |v|
+			opts.on("-p","--pass PASSWORD",String, "data api password(provised by PromptCloud, used for api v1)") do |v|
 				options[:pass] = v
 			end
 
-			opts.on("--loop", "download new data files and keep looking for new one. i.e it doesn't exit, if no new feed is found it will sleep. minimun sleep time is 10 secs and max sleep time is 300 secs") do |v|
+			opts.on("-k","--client_auth_key AUTHKEY",String, "data api client auth key(provided by PromptCloud, used for api v2)") do |v|
+				options[:client_auth_key] = v
+			end
+			
+			opts.on("-i","--perform_initial_setup", "to perform initial setup") do |v|
+				options[:perform_initial_setup] = v
+			end
+			
+			opts.on("--display_info", "to display config info") do |v|
+				options[:display_info] = v
+			end
+
+			opts.on("--apiconf APICONFPATH",String, "to override the config file path(config file stores information like client_id, password, client_auth_key, downloadir etc)") do |v|
+				options[:apiconf] = v
+			end
+
+			opts.on("--download_dir DOWNLOAD_DIRECTORY",String, "to override the download dir(which contains downloaded data files)") do |v|
+				options[:download_dir] = v
+			end
+
+			opts.on("--promptcloudhome PROMPTCLOUDHOME",String, "to override the promptcloudhome dir(~/promptcloud)") do |v|
+				options[:promptcloudhome] = v
+			end
+
+			opts.on("-t","--timestamp TIMESTAMP",Integer, "to query promptcloud api for files newer than or equal to given timestamp") do |v|
+				options[:timestamp] = v
+			end
+
+			opts.on("--queried_timestamp_file queried TIMESTAMPFILE",String, "to override the last timestamp file(contains last queried timestamp)") do |v|
+				options[:queried_timestamp_file] = v
+			end
+
+			opts.on("--category CATEGORY ",String, "to query promptcloud api for files of the given category(if files of different verticals are placed in different directory under client's parent directory, then files of specific directory can be obtained by specifying that directory name in category option)") do |v|
+				options[:category] = v
+			end
+			
+			opts.on("--site SITE_NAME",String, "to query promptcloud api for files of the given site") do |v|
+				options[:site] = v
+			end
+			
+			opts.on("--loop", "download new data files and keep looking for new one(i.e it doesn't exit, if no new feed is found it will sleep, minimun sleep time is 10 secs and max sleep time is 300 secs)") do |v|
 				options[:loop] = v
 			end
 
-			opts.on("--noloop", "Download new data files and and exit, this is the default behaviour") do |v|
+			opts.on("--noloop", "download new data files and and exit, this is the default behaviour") do |v|
 				options[:noloop] = v
 			end
 
-			opts.on("--bcp", "use bcp.promptcloud.com instead of api.promptcloud.com") do |v|
+			opts.on("--bcp", "to download data from PromptCloud backup server(high availability server, should use if main data api server is unreachable)") do |v|
 				options[:bcp] = v
 			end
 			
