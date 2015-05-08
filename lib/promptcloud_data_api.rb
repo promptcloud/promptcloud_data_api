@@ -299,6 +299,23 @@ class PromptCloudApiArgParser
 		script_name=$0
 		$stderr.puts <<END
 Example :
+	# Initial setup(default config)
+        ruby #{script_name} --perform_initial_setup --user <username> --pass <password>                              # API v1 requires valid userid and password
+	ruby #{script_name} --api_version v2  --perform_initial_setup --user <username> --client_auth_kay <auth key> # API v2 requires valid user id and authentication key
+	
+	# Download data 
+	ruby #{script_name}                               # to download data of last 2 days (default)
+	ruby #{script_name} --timestamp <timestamp>       # to use of timestamp param
+	ruby #{script_name} --site <test_site> --days 7   # to download data of the site test_site uploaded in last 7 days
+	ruby #{script_name} --category blog --hours 10    # to download data of the category blog uploaded in last 10 hours
+	ruby #{script_name} --minutes 20                  # to download data uploaded in last 20 minutes
+	ruby #{script_name} --bcp                         # to download data from bcp(PromptCloud backup server)
+	ruby #{script_name} --loop                        # to download data continuously, it will automatically check our API for new data
+
+	# To use own config
+	ruby #{script_name} --apiconf <apiconf file pull path>             # to override apiconf file	
+	ruby #{script_name} --download_dir <download directory full path>  # to override download directory 
+	ruby #{script_name} --promptcloudhome <promptcloudhome full path>  # to override promptcloudhome home
 END
 	end
 		
@@ -337,7 +354,7 @@ END
 				options[:apiconf] = v
 			end
 
-			opts.on("--download_dir DOWNLOAD_DIRECTORY",String, "to override the download dir(which contains downloaded data files)") do |v|
+			opts.on("--download_dir DOWNLOAD_DIRECTORY",String, "to override the download directory(which contains downloaded data files)") do |v|
 				options[:download_dir] = v
 			end
 

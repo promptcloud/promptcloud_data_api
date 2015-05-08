@@ -27,7 +27,7 @@ Directly install using:
         --display_info               to display config info
         --apiconf APICONFPATH        to override the config file path(config file stores information like client_id, password, client_auth_key, downloadir etc)
         --download_dir DOWNLOAD_DIRECTORY
-                                     to override the download dir(which contains downloaded data files)
+                                     to override the download directory(which contains downloaded data files)
         --promptcloudhome PROMPTCLOUDHOME
                                      to override the promptcloudhome dir(~/promptcloud)
     -t, --timestamp TIMESTAMP        to query promptcloud api for files newer than or equal to given timestamp
@@ -42,6 +42,26 @@ Directly install using:
         --noloop                     download new data files and and exit, this is the default behaviour
         --bcp                        to download data from PromptCloud backup server(high availability server, should use if main data api server is unreachable)
     -h, --help                       Show this message
+
+    Example :
+        # Initial setup(default config)
+        ruby ./get_promptcloud_data --perform_initial_setup --user <username> --pass <password>                              # API v1 requires valid userid and password
+        ruby ./get_promptcloud_data --api_version v2  --perform_initial_setup --user <username> --client_auth_kay <auth key> # API v2 requires valid user id and authentication key
+
+        # Download data 
+        ruby ./get_promptcloud_data                               # to download data of last 2 days (default)
+        ruby ./get_promptcloud_data --timestamp <timestamp>       # to use of timestamp param
+        ruby ./get_promptcloud_data --site <test_site> --days 7   # to download data of the site test_site uploaded in last 7 days
+        ruby ./get_promptcloud_data --category blog --hours 10    # to download data of the category blog uploaded in last 10 hours
+        ruby ./get_promptcloud_data --minutes 20                  # to download data uploaded in last 20 minutes
+        ruby ./get_promptcloud_data --bcp                         # to download data from bcp(PromptCloud backup server)
+        ruby ./get_promptcloud_data --loop                        # to download data continuously, it will automatically check our API for new data
+
+        # To use own config
+        ruby ./get_promptcloud_data --apiconf <apiconf file pull path>             # to override apiconf file
+        ruby ./get_promptcloud_data --download_dir <download directory full path>  # to override download directory 
+        ruby ./get_promptcloud_data --promptcloudhome <promptcloudhome full path>  # to override promptcloudhome home
+
 
 ####Note 
 
