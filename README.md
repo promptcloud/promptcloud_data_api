@@ -74,27 +74,27 @@ Directly install using:
 For queries related to this gem please contact the folks at promptcloud or open a github issue.
 
 #### API Help Links 
-API v1: [https://api.promptcloud.com/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
+API v1 - [https://api.promptcloud.com/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
 
-API v2: [https://api.promptcloud.com/v2/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
+API v2 - [https://api.promptcloud.com/v2/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
 
 #### Access using program
 
 require 'promptcloud_data_api'
 
-For API v1
+For API v1 -
 
     obj = PromptCloudApi.new({--perform_initial_setup, :user => "your valid user name", :pass => "your valid password"})
 
-For API v2
+For API v2 -
 
     obj = PromptCloudApi.new({--perform_initial_setup, :user => "your valid user name", :client_auth_key => "your valid auth key"})
 
-To download data files. By default it will download the data files which are uploaded in last 2 days. 
+To download data files(By default it will download the data files which are uploaded in last 2 days) -
 
     obj.download_files
 
-To download data files with custom settings, we have to pass an options hash.
+To download data files with custom settings, we have to pass an options hash. Example -
 
     options = {}
     options[:site] = "test_site"
@@ -103,13 +103,13 @@ To download data files with custom settings, we have to pass an options hash.
 
 #### Access using command line
 
-For API v1
+For API v1 -
 
     get_promptcloud_data --perform_initial_setup --user "username" --pass "password"
     
     get_promptcloud_data [--category "category"] [--timestamp "timestamp"]
 
-For API v2
+For API v2 -
 
     get_promptcloud_data --api_version v2  --perform_initial_setup --user "username" --client_auth_kay "auth key"
     
