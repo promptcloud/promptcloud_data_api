@@ -90,11 +90,11 @@ For API v2
 
     obj = PromptCloudApi.new({--perform_initial_setup, :user => "your valid user name", :client_auth_key => "your valid auth key"})
 
-To download data file(By default it will download last 2 dyas data). 
+To download data files. By default it will download the data files which are uploaded in last 2 days. 
 
     obj.download_files
 
-To download data with custom settings, we have to pass an options hash.
+To download data files with custom settings, we have to pass an options hash.
 
     options = {}
     options[:site] = "test_site"
