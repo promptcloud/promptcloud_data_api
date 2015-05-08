@@ -1,19 +1,19 @@
-# PromptCloudDataAPI
+#PromptCloudDataAPI
 
 This is [PromptCloud's](http://promptcloud.com) data API gem. It can be used to fetch the client specific data from PromptCloud data API. Available data API version are v1 and v2.  
 
-## Installation
-#### Option 1
-Add this line to your application's Gemfile:
+##Installation
+####Option 1 -
+1. Add below line to your application's Gemfile.
 
     gem 'promptcloud_data_api'
 
-And then execute:
+2. Now execute below command.
 
     $ bundle
 
-#### Option 2
-Directly install using:
+####Option 2 -
+Directly install using gem. Command to run -
 
     $ gem install promptcloud_data_api
 
