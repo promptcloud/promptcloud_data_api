@@ -54,14 +54,9 @@ Directly install using:
 For queries related to this gem please contact the folks at promptcloud or open a github issue.
 
 #### API Help Links 
-API v1 
+API v1: [https://api.promptcloud.com/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
 
-    [https://api.promptcloud.com/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
-
-API v2
-  
-    [https://api.promptcloud.com/v2/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
-
+API v2: [https://api.promptcloud.com/v2/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
 
 #### Access using program
 
