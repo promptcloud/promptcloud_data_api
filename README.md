@@ -101,6 +101,15 @@ To download data files with custom settings, we have to pass an options hash. Ex
     options[:timestamp] = "timestamp"
     obj.download_files(options)
 
+Other available options are -  
+    
+    days
+    hours
+    minutes 
+    category
+    bcp
+    loop
+
 #### Access using command line
 
 For API v1 -
