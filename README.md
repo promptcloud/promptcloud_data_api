@@ -1,6 +1,6 @@
 #PromptCloudDataAPI
 
-This is [PromptCloud's](http://promptcloud.com) data API gem. It can be used to fetch the client specific data from PromptCloud data API. Available data API version are v1 and v2.  
+This is [PromptCloud's](http://promptcloud.com) data API gem. It can be used to fetch the client specific data from PromptCloud data API. Available API versions are v1 and v2. 
 
 ##Installation
 ####Option 1 -
