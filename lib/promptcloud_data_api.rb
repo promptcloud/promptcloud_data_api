@@ -168,6 +168,9 @@ class PromptCloudApi
 				file << args_hash[:timestamp]
 			end
 		end
+		promptcloud_api_url += "&days=#{args_hash[:days]}" if args_hash[:days]
+		promptcloud_api_url += "&hours=#{args_hash[:hours]}" if args_hash[:hours]
+		promptcloud_api_url += "&minutes=#{args_hash[:minutes]}" if args_hash[:minutes]
 		promptcloud_api_url += "&cat=#{args_hash[:category]}" if args_hash[:category]
 		promptcloud_api_url += "&site=#{args_hash[:site]}" if args_hash[:site]
 		return promptcloud_api_url
@@ -345,7 +348,19 @@ END
 			opts.on("-t","--timestamp TIMESTAMP",Integer, "to query promptcloud api for files newer than or equal to given timestamp") do |v|
 				options[:timestamp] = v
 			end
-
+			
+			opts.on("--days DAYS",Integer, "to download the data of last few days") do |v|
+				options[:days] = v
+			end
+			
+			opts.on("--hours DAYS",Integer, "to download the data of last few hours") do |v|
+				options[:hours] = v
+			end
+			
+			opts.on("--minutes MINUTES",Integer, "to download the data last few minutes") do |v|
+				options[:minutes] = v
+			end
+			
 			opts.on("--queried_timestamp_file queried TIMESTAMPFILE",String, "to override the last timestamp file(contains last queried timestamp)") do |v|
 				options[:queried_timestamp_file] = v
 			end

@@ -25,34 +25,78 @@ Directly install using:
 
     $ gem install promptcloud_data_api
 
-## Usage
+## Usage: ./get_promptcloud_data [options] 
+
+    -v, --api_version VERSION        to get data from different api version(available versions are v1 and v2, the defalut version is v1)
+    -u, --user USER                  data api user id(provided by PromptCloud)
+    -p, --pass PASSWORD              data api password(provised by PromptCloud, used for api v1)
+    -k, --client_auth_key AUTHKEY    data api client auth key(provided by PromptCloud, used for api v2)
+    -i, --perform_initial_setup      to perform initial setup
+        --display_info               to display config info
+        --apiconf APICONFPATH        to override the config file path(config file stores information like client_id, password, client_auth_key, downloadir etc)
+        --download_dir DOWNLOAD_DIRECTORY
+                                     to override the download dir(which contains downloaded data files)
+        --promptcloudhome PROMPTCLOUDHOME
+                                     to override the promptcloudhome dir(~/promptcloud)
+    -t, --timestamp TIMESTAMP        to query promptcloud api for files newer than or equal to given timestamp
+        --days DAYS                  to download the data of last few days
+        --hours DAYS                 to download the data of last few hours
+        --minutes MINUTES            to download the data last few minutes
+        --queried_timestamp_file queried TIMESTAMPFILE
+                                     to override the last timestamp file(contains last queried timestamp)
+        --category CATEGORY          to query promptcloud api for files of the given category(if files of different verticals are placed in different directory under client's parent directory, then files of specific directory can be obtained by specifying that directory name in category option)
+        --site SITE_NAME             to query promptcloud api for files of the given site
+        --loop                       download new data files and keep looking for new one(i.e it doesn't exit, if no new feed is found it will sleep, minimun sleep time is 10 secs and max sleep time is 300 secs)
+        --noloop                     download new data files and and exit, this is the default behaviour
+        --bcp                        to download data from PromptCloud backup server(high availability server, should use if main data api server is unreachable)
+    -h, --help                       Show this message
+
+####NOTE:
+
+    If option --perform_initial_setup is provided along with other options, then initial setup will be performed (create conf file, download dir).
+
+    If we do not pass any of --timestamp, --days, --hours and --minutes, then past 2 days data will be downloaded(default setting).
+
+#### API Help Links 
+
+API v1 
+
+    https://api.promptcloud.com/data/info?type=help
+
+API v2
+  
+    https://api.promptcloud.com/v2/data/info?type=help
+
 
 #### Access using program
 
 require 'promptcloud_data_api'
 
-obj = PromptCloudApi.new({:user => "your valid user name", :pass => "your valid password"}) # API v1
+For API v1
 
-obj = PromptCloudApi.new({:user => "your valid user name", :client_auth_key => "your valid auth key"}) # API v2
+    obj = PromptCloudApi.new({--perform_initial_setup, :user => "your valid user name", :pass => "your valid password"})
 
-obj.download_files({:timestamp => "timestamp"[optional], :category => "category"[optional], :site => "site name"[optional]})
+For API v2
+
+    obj = PromptCloudApi.new({--perform_initial_setup, :user => "your valid user name", :client_auth_key => "your valid auth key"})
+
+To download data files 
+
+    obj.download_files({:timestamp => "timestamp"[optional], :category => "category"[optional], :site => "site name"[optional]})
 
 #### Access using command line
 
-get_promptcloud_data -h #will display help
+For API v1
 
-get_promptcloud_data --user "username" --pass "password" [--category "category"] [--timestamp "timestamp"] # API v1 
+    get_promptcloud_data --perform_initial_setup --user "username" --pass "password"
+    
+    get_promptcloud_data [--category "category"] [--timestamp "timestamp"]
 
-get_promptcloud_data --api_version v2  --user "username" --client_auth_kay "auth key" [--category "category"] [--timestamp "timestamp"] # API v2
+For API v2
 
-* The downloaded files will be put in ~/promptcloud/downloads
-* To override download di, provide arg - :download_dir => "download dir full path"
-* To override defalut promptcloudhome(~/promptcloud), provide arg - :promptcloudhome => "complete path of other dir"
-* API config file at ~/promptcloud/configs/config.yml
-* To override conf dir provide arg - :apiconf => "api conf full path"
-* Log file can be viewed at ~/promptcloud/log/*log
-
-In command line tool, if option --perform_initial_setup is provided along with other options, then initial setup will be performed (create conf file, download dir).
+    get_promptcloud_data --api_version v2  --perform_initial_setup --user "username" --client_auth_kay "auth key"
+    
+    get_promptcloud_data --api_version v2 [--category "category"] [--timestamp "timestamp"] # API v2
 
 ## Contributing
 In order to contribute to this gem -
