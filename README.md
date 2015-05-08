@@ -45,22 +45,22 @@ Directly install using:
 
     Example :
         # Initial setup(default config)
-        ruby ./get_promptcloud_data --perform_initial_setup --user <username> --pass <password>                              # API v1 requires valid userid and password
-        ruby ./get_promptcloud_data --api_version v2  --perform_initial_setup --user <username> --client_auth_kay <auth key> # API v2 requires valid user id and authentication key
+        ./get_promptcloud_data --perform_initial_setup --user <username> --pass <password>                              # API v1 requires valid userid and password
+        ./get_promptcloud_data --api_version v2  --perform_initial_setup --user <username> --client_auth_kay <auth key> # API v2 requires valid user id and authentication key
 
         # Download data 
-        ruby ./get_promptcloud_data                               # to download data of last 2 days (default)
-        ruby ./get_promptcloud_data --timestamp <timestamp>       # to use of timestamp param
-        ruby ./get_promptcloud_data --site <test_site> --days 7   # to download data of the site test_site uploaded in last 7 days
-        ruby ./get_promptcloud_data --category blog --hours 10    # to download data of the category blog uploaded in last 10 hours
-        ruby ./get_promptcloud_data --minutes 20                  # to download data uploaded in last 20 minutes
-        ruby ./get_promptcloud_data --bcp                         # to download data from bcp(PromptCloud backup server)
-        ruby ./get_promptcloud_data --loop                        # to download data continuously, it will automatically check our API for new data
+        ./get_promptcloud_data                               # to download data of last 2 days (default)
+        ./get_promptcloud_data --timestamp <timestamp>       # to use of timestamp param
+        ./get_promptcloud_data --site <test_site> --days 7   # to download data of the site test_site uploaded in last 7 days
+        ./get_promptcloud_data --category blog --hours 10    # to download data of the category blog uploaded in last 10 hours
+        ./get_promptcloud_data --minutes 20                  # to download data uploaded in last 20 minutes
+        ./get_promptcloud_data --bcp                         # to download data from bcp(PromptCloud backup server)
+        ./get_promptcloud_data --loop                        # to download data continuously, it will automatically check our API for new data
 
         # To use own config
-        ruby ./get_promptcloud_data --apiconf <apiconf file pull path>             # to override apiconf file
-        ruby ./get_promptcloud_data --download_dir <download directory full path>  # to override download directory 
-        ruby ./get_promptcloud_data --promptcloudhome <promptcloudhome full path>  # to override promptcloudhome home
+        ./get_promptcloud_data --apiconf <apiconf file pull path>             # to override apiconf file
+        ./get_promptcloud_data --download_dir <download directory full path>  # to override download directory 
+        ./get_promptcloud_data --promptcloudhome <promptcloudhome full path>  # to override promptcloudhome home
 
 
 ####Note 
@@ -90,9 +90,16 @@ For API v2
 
     obj = PromptCloudApi.new({--perform_initial_setup, :user => "your valid user name", :client_auth_key => "your valid auth key"})
 
-To download data files 
+To download data file(By default it will download last 2 dyas data). 
 
-    obj.download_files({:timestamp => "timestamp"[optional], :category => "category"[optional], :site => "site name"[optional]})
+    obj.download_files
+
+To download data with custom settings, we have to pass an options hash.
+
+    options = {}
+    options[:site] = "test_site"
+    options[:timestamp] = "timestamp"
+    obj.download_files(options)
 
 #### Access using command line
 
