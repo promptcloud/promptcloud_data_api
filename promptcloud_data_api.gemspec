@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
   gem.version       = PromptcloudDataApi::VERSION
   gem.authors       = ["PromptCloud"]
   gem.email         = ["promptcloud-data-api@promptcloud.com"]
-  gem.description   = %q{This gem can be used to download data from Promptcloud data API. You need to be PromptCloud client to get the data data though :)}
+  gem.description   = %q{This gem can be used to download data from Promptcloud data API. You need to be PromptCloud client to get the data though :)}
   gem.summary       = %q{use it to query promptcloud indexed data}
   gem.homepage      = "http://promptcloud.com"
   gem.files         = `git ls-files`.split($/)
