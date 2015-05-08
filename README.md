@@ -1,14 +1,6 @@
 # PromptCloudDataAPI
 
-This is PromptCloud's (http://promptcloud.com) data API gem. It can be used to fetch the client specific data from PromptCloud data API. Available data API version are v1 and v2.  
-
-Note: 
-* API v1 requires valid userid and password.
-* API v2 requires userid and authentication key.
-
-PromptCloud provides userid and password/authentication key.  
-
-For queries related to this gem please contact the folks at promptcloud or open a github issue.
+This is [PromptCloud's](http://promptcloud.com) data API gem. It can be used to fetch the client specific data from PromptCloud data API. Available data API version are v1 and v2.  
 
 ## Installation
 #### Option 1
@@ -51,21 +43,24 @@ Directly install using:
         --bcp                        to download data from PromptCloud backup server(high availability server, should use if main data api server is unreachable)
     -h, --help                       Show this message
 
-####NOTE:
+####Note 
 
-    If option --perform_initial_setup is provided along with other options, then initial setup will be performed (create conf file, download dir).
+* API v1 requires valid userid and password.
+* API v2 requires userid and authentication key.
+* PromptCloud provides userid and password/authentication key to the client.  
+* If option --perform_initial_setup is provided along with other options, then initial setup will be performed(create conf file, download dir).
+* If we do not pass any of --timestamp, --days, --hours and --minutes, then past 2 days data will be downloaded(default setting).
 
-    If we do not pass any of --timestamp, --days, --hours and --minutes, then past 2 days data will be downloaded(default setting).
+For queries related to this gem please contact the folks at promptcloud or open a github issue.
 
 #### API Help Links 
-
 API v1 
 
-    https://api.promptcloud.com/data/info?type=help
+    [https://api.promptcloud.com/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
 
 API v2
   
-    https://api.promptcloud.com/v2/data/info?type=help
+    [https://api.promptcloud.com/v2/data/info?type=help](https://api.promptcloud.com/data/info?type=help)
 
 
 #### Access using program
