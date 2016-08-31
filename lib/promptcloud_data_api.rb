@@ -94,6 +94,23 @@ class PromptCloudApi
 			file << @conf_hash.to_yaml
 		end
 	end
+	def unzip_files(args_hash)
+		$stderr.puts  "creating unzipped_files directory at  #{@download_dir}"
+		unzip_file_path = File.join(@download_dir,"unzipped_files")
+		FileUtils::mkdir_p(unzip_file_path) unless File.directory?(unzip_file_path)
+		Dir.foreach(@download_dir) do |files|
+			next if files == '.' or files == '..' or files == "unzipped_files"
+			zip_file_basename = File.basename(files).gsub(".gz","")
+			zip_file = File.join(unzip_file_path,zip_file_basename)
+			dir_files  = File.join(@download_dir,files)
+			output_file = File.open(zip_file,"w")
+			gz_file = Zlib::GzipReader.open(dir_files)
+			gz_file.each_line do |extract|
+				output_file.write(extract)
+			end
+		end
+		$stderr.puts "Unzipped files are available at : #{unzip_file_path}\n\n"
+	end
 
 	def download_files(args_hash)
 		new_feed_exists = false
@@ -120,6 +137,7 @@ class PromptCloudApi
 				md5_filepath = args_hash[:md5_dir]+ "/#{md5_filename}"
 				if File.file?(md5_filepath) and File.open(md5_filepath).read.chomp.strip == md5sum
 					$stderr.puts "Skipping file #{url}, it has been downloaded earlier."
+					unzip_files(args_hash) if args_hash[:ungzip] 
 					next
 				end
 				new_feed_exists = true
@@ -135,6 +153,7 @@ class PromptCloudApi
 					Zlib::GzipReader.open(outfile) {|gz|
 						content = gz.read
 					}
+
 					downloaded_md5 = Digest::MD5.hexdigest(content)
 					if md5sum == downloaded_md5
 						File.open(md5_filepath, "w"){|file| file.puts md5sum}
@@ -144,6 +163,8 @@ class PromptCloudApi
 						fetch_log_file.puts "Failed: #{url}"
 						File.delete(outfile)
 					end
+
+					unzip_files(args_hash) if args_hash[:ungzip]
 				rescue Exception => e
 					$stderr.puts "Failed to fetch url: #{url}, Exception: #{e.class}, #{e.message}"
 					fetch_log_file.puts "Failed: #{url}"
@@ -301,7 +322,7 @@ class PromptCloudApiArgParser
 Example :
 	# Initial setup(default config)
         ruby #{script_name} --perform_initial_setup --user <username> --pass <password>                              # API v1 requires valid userid and password
-	ruby #{script_name} --api_version v2  --perform_initial_setup --user <username> --client_auth_kay <auth key> # API v2 requires valid user id and authentication key
+	ruby #{script_name} --api_version v2  --perform_initial_setup --user <username> --client_auth_key <auth key> # API v2 requires valid user id and authentication key
 	
 	# Download data 
 	ruby #{script_name}                               # to download data of last 2 days (default)
@@ -400,6 +421,10 @@ END
 
 			opts.on("--bcp", "to download data from PromptCloud backup server(high availability server, should use if main data api server is unreachable)") do |v|
 				options[:bcp] = v
+			end
+
+			opts.on("--ungzip", "unzip all the downloaded files and saves the files in a new directory") do |v|
+				options[:ungzip] = v
 			end
 			
 			opts.on_tail("-h", "--help", "Show this message") do
