@@ -41,6 +41,7 @@ Directly install using gem. Command to run -
         --loop                       download new data files and keep looking for new one(i.e it doesn't exit, if no new feed is found it will sleep, minimun sleep time is 10 secs and max sleep time is 300 secs)
         --noloop                     download new data files and and exit, this is the default behaviour
         --bcp                        to download data from PromptCloud backup server(high availability server, should use if main data api server is unreachable)
+	--ungzip                     unzip all the downloaded files and saves the files in a new directory
     -h, --help                       Show this message
 
     Example :
